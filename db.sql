@@ -1,9 +1,8 @@
-DROP TABLE IF EXISTS metric;
+DROP TABLE IF EXISTS pastebin;
 
-CREATE TABLE IF NOT EXISTS metric (
+CREATE TABLE IF NOT EXISTS pastebin (
     id BIGSERIAL PRIMARY KEY,
     timestamp BIGINT NOT NULL,
-    name TEXT NOT NULL,
-    fields JSONB NOT NULL,
-    tags JSONB NULL
+    title TEXT NOT NULL,
+    content TEXT NOT NULL
 );
