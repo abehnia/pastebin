@@ -34,6 +34,7 @@ func main() {
 	r.HandleFunc("/bins", createBinHandler).Methods("POST")
 	r.HandleFunc("/bins/{uuid}", getBinHandler).Methods("GET")
 	r.HandleFunc("/bins/{uuid}/star", starBinHandler).Methods("POST")
+	r.HandleFunc("/leaderboard", getLeaderboardHandler).Methods("GET")
 
 	log.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
@@ -125,4 +126,36 @@ func getBinHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(bin)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(bin)
+}
+
+func getLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
+	psqlInfo := fmt.Sprintf("user=ubuntu password=pwd dbname=postgres sslmode=disable")
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT title, content, star_counter FROM pastebin ORDER BY star_counter desc")
+    if err != nil {
+        fmt.Println(err)
+    }
+    defer rows.Close()
+
+	var bins []Bin
+	for rows.Next() {
+        var bin Bin
+        if err := rows.Scan(&bin.Title, &bin.Text, &bin.StarCounter); err != nil {
+            fmt.Println(err)
+        }
+        bins = append(bins, bin)
+    }
+    if err = rows.Err(); err != nil {
+        fmt.Println(err)
+    }
+
+	fmt.Println(bins)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(bins)
 }
