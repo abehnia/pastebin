@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS metric;
+
+CREATE TABLE IF NOT EXISTS metric (
+    id BIGSERIAL PRIMARY KEY,
+    timestamp BIGINT NOT NULL,
+    name TEXT NOT NULL,
+    fields JSONB NOT NULL,
+    tags JSONB NULL
+);
