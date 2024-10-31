@@ -18,7 +18,7 @@ go run .
 ## How to run the server
 
 ```
-go run main.go
+go run main.go router.go handlers.go models.go
 ```
 ## How to test the functionality
 
