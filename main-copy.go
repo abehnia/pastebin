@@ -1,10 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
-	"database/sql"
+
 	_ "github.com/lib/pq"
 )
 
