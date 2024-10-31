@@ -21,49 +21,23 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: pastebin; Type: TABLE; Schema: public; Owner: postgres
+-- Name: pastebin; Type: TABLE; Schema: public; Owner: ubuntu
 --
 
+DROP TABLE IF EXISTS public.pastebin;
+
 CREATE TABLE public.pastebin (
-    id bigint NOT NULL,
+    id uuid NOT NULL,
     "timestamp" bigint NOT NULL,
     title text NOT NULL,
     content text NOT NULL
 );
 
 
-ALTER TABLE public.pastebin OWNER TO postgres;
+ALTER TABLE public.pastebin OWNER TO ubuntu;
 
 --
--- Name: pastebin_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.pastebin_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.pastebin_id_seq OWNER TO postgres;
-
---
--- Name: pastebin_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.pastebin_id_seq OWNED BY public.pastebin.id;
-
-
---
--- Name: pastebin id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pastebin ALTER COLUMN id SET DEFAULT nextval('public.pastebin_id_seq'::regclass);
-
-
---
--- Name: pastebin pastebin_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: pastebin pastebin_pkey; Type: CONSTRAINT; Schema: public; Owner: ubuntu
 --
 
 ALTER TABLE ONLY public.pastebin
@@ -71,18 +45,10 @@ ALTER TABLE ONLY public.pastebin
 
 
 --
--- Name: TABLE pastebin; Type: ACL; Schema: public; Owner: postgres
+-- Name: TABLE pastebin; Type: ACL; Schema: public; Owner: ubuntu
 --
 
 GRANT ALL ON TABLE public.pastebin TO ubuntu;
-
-
---
--- Name: SEQUENCE pastebin_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT,USAGE ON SEQUENCE public.pastebin_id_seq TO ubuntu;
-
 
 --
 -- PostgreSQL database dump complete
