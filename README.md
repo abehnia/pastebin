@@ -25,7 +25,7 @@ go run main.go
 Create a new bin
 
 ```
-curl -X POST http://localhost:8080/bins -H "Content-Type: application/json" -d '{"text": "that's my bin y'all"}'
+curl -X POST http://localhost:8080/bins -H "Content-Type: application/json" -d '{"title": "My perfect bin", "text": "that's my bin y'all"}'
 ```
 
 Get an existing bin
