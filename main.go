@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 
 	"database/sql"
@@ -15,13 +14,17 @@ import (
 )
 
 // Bin represents a text bin with text content.
-type Bin struct {
-	Text string `json:"text"`
+type BinRequest struct {
+	Text  string `json:"text"`
+	Title string `json:"title"`
 }
 
-// In-memory storage for bins.
-var bins = make(map[string]Bin)
-var binsMutex sync.Mutex
+type Bin struct {
+	Id        string `json:"id"`
+	Text      string `json:"text"`
+	Title     string `json:"title"`
+	Timestamp string `json:"timestamp"`
+}
 
 func main() {
 	// Initialize the router.
@@ -38,7 +41,7 @@ func main() {
 
 // createBinHandler handles the creation of a new bin.
 func createBinHandler(w http.ResponseWriter, r *http.Request) {
-	var newBin Bin
+	var newBin BinRequest
 
 	psqlInfo := fmt.Sprintf("user=ubuntu password=pwd dbname=postgres sslmode=disable")
 	db, err := sql.Open("postgres", psqlInfo)
@@ -46,6 +49,7 @@ func createBinHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+	defer db.Close()
 
 	// Parse the request body.
 	err = json.NewDecoder(r.Body).Decode(&newBin)
@@ -57,16 +61,11 @@ func createBinHandler(w http.ResponseWriter, r *http.Request) {
 	// Generate a new UUID for the bin.
 	id := uuid.New().String()
 
-	_, err = db.Exec("INSERT INTO pastebin(id, timestamp, title, content) VALUES($1, $2, $3, $4)", id, time.Now().UTC().Unix(), "my-title", newBin.Text)
+	_, err = db.Exec("INSERT INTO pastebin(id, timestamp, title, content) VALUES($1, $2, $3, $4)", id, time.Now().UTC().Unix(), newBin.Title, newBin.Text)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	// Store the bin in the map with a lock.
-	binsMutex.Lock()
-	bins[id] = newBin
-	binsMutex.Unlock()
 
 	// Respond with the UUID.
 	w.Header().Set("Content-Type", "application/json")
@@ -79,16 +78,23 @@ func getBinHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["uuid"]
 
-	// Retrieve the bin from the map with a lock.
-	binsMutex.Lock()
-	bin, exists := bins[id]
-	binsMutex.Unlock()
+	psqlInfo := fmt.Sprintf("user=ubuntu password=pwd dbname=postgres sslmode=disable")
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
 
-	if !exists {
-		http.Error(w, "Bin not found", http.StatusNotFound)
+	var bin Bin
+	err = db.QueryRow("SELECT id, timestamp, title, content FROM pastebin WHERE id = $1", id).Scan(&bin.Id, &bin.Timestamp, &bin.Title, &bin.Text)
+
+	if err != nil {
+		http.Error(w, "Resource Not Found", http.StatusNotFound)
 		return
 	}
 
+	fmt.Println(bin)
 	// Respond with the bin's text.
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(bin)
